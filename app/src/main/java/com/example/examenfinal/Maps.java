@@ -4,10 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,7 +20,22 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class Maps extends Fragment {
+    private BDDCreation BDCreation;
+    private SQLiteDatabase db;
+    protected String city = "";
+    protected String data = "";
+    protected String results = "";
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -39,7 +58,6 @@ public class Maps extends Fragment {
 
     public static Fragment newInstance(String s, String s1) {
         Maps fragment = new Maps();
-
         return fragment;
     }
 
@@ -48,7 +66,26 @@ public class Maps extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_maps, container, false);
+        final View Maps = inflater.inflate(R.layout.fragment_maps, container, false);
+        final Button btnsearch = Maps.findViewById(R.id.btnSearch);
+        btnsearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showResult(city);
+            }
+        });
+        final Button btnfav = Maps.findViewById(R.id.btnfav);
+        btnfav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BDCreation = new BDDCreation(getContext());
+                db = BDCreation.getWritableDatabase();
+                EditText txtcity = Maps.findViewById(R.id.txtSearch);
+                city = txtcity.getText().toString().trim();
+                BDDCreation.insertCity(db, city);
+            }
+        });
+        return Maps;
     }
 
     @Override
@@ -59,5 +96,11 @@ public class Maps extends Fragment {
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
         }
+
+    }
+
+    private void showResult(String city){
+        FetchData process = new FetchData(city);
+        process.execute();
     }
 }

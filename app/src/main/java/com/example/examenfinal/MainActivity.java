@@ -1,6 +1,6 @@
 package com.example.examenfinal;
 
-import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -10,12 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
+    private BDDCreation BDCreation;
+    private SQLiteDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void openFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, fragment);
+        transaction.replace(R.id.logo, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -39,14 +37,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            Fragment fragment;
+            BDCreation = new BDDCreation(getApplicationContext());
+            db = BDCreation.getWritableDatabase();
             switch (item.getItemId()) {
                 case R.id.navigation_home:
+                    openFragment(Home.newInstance());
                     return true;
                 case R.id.navigation_search:
-                    openFragment(Maps.newInstance("", ""));
+                    openFragment(Maps.newInstance("a", "b"));
+                    BDCreation.close();
+                    db.close();
                     return true;
                 case R.id.navigation_myplaces:
+                    openFragment(Myplaces.newInstance());
                     return true;
             }
             return false;
